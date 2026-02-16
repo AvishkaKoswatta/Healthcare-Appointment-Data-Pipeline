@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: raw
+    database: healthcare_db
+    schema: RAW
+    tables:
+      - name: patient
+      - name: doctor
+      - name: hospital
+      - name: appointment_events

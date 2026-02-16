@@ -1,0 +1,27 @@
+# GitHub Actions cache
+/.github/.cache
+
+# Docker cache
+docker/logs/
+docker/minio/
+docker/plugins/
+docker/postgres/
+
+# DBT cache
+healthcare_appointment_dbt/.dbt/
+healthcare_appointment_dbt/analyses/
+healthcare_appointment_dbt/logs/
+healthcare_appointment_dbt/macros/
+healthcare_appointment_dbt/seeds/
+healthcare_appointment_dbt/target/
+healthcare_appointment_dbt/tests/
+
+.env
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+.DS_Store
+docker-compose.override.yml
+logs/
+
