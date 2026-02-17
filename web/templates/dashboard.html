@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — HealthOS{% endblock %}
+{% block page_title %}Live Dashboard{% endblock %}
+
+{% block extra_head %}
+<!-- <meta http-equiv="refresh" content="10"> -->
+<style>
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .kpi-card:hover { transform: translateY(-2px); }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .kpi-card.green::before  { background: var(--accent); }
+  .kpi-card.blue::before   { background: var(--accent2); }
+  .kpi-card.yellow::before { background: var(--warn); }
+  .kpi-card.red::before    { background: var(--danger); }
+  .kpi-card.purple::before { background: #a78bfa; }
+
+  .kpi-icon { font-size: 1.5rem; margin-bottom: 10px; }
+  .kpi-value {
+    font-family: var(--font-head);
+    font-size: 2.4rem;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .kpi-label { font-size: 0.78rem; color: var(--muted); font-weight: 600;
+               text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) { .bottom-grid { grid-template-columns: 1fr; } }
+
+  .specialty-bar { margin-bottom: 10px; }
+  .spec-label { display: flex; justify-content: space-between;
+                font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+  .spec-track { background: var(--border); border-radius: 999px; height: 6px; overflow: hidden; }
+  .spec-fill  { height: 100%; border-radius: 999px; background: var(--accent); transition: width 0.8s ease; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- KPI Cards -->
+<div class="kpi-grid">
+  <div class="kpi-card green">
+    <div class="kpi-icon">🏥</div>
+    <div class="kpi-value">{{ total_hospitals }}</div>
+    <div class="kpi-label">Hospitals</div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-icon">👨‍⚕️</div>
+    <div class="kpi-value">{{ total_doctors }}</div>
+    <div class="kpi-label">Doctors</div>
+  </div>
+  <div class="kpi-card yellow">
+    <div class="kpi-icon">🧑‍🦽</div>
+    <div class="kpi-value">{{ total_patients }}</div>
+    <div class="kpi-label">Patients</div>
+  </div>
+  <div class="kpi-card green">
+    <div class="kpi-icon">📅</div>
+    <div class="kpi-value">{{ today_appointments }}</div>
+    <div class="kpi-label">Today's Appointments</div>
+  </div>
+  <div class="kpi-card purple">
+    <div class="kpi-icon">✅</div>
+    <div class="kpi-value">{{ active_appointments }}</div>
+    <div class="kpi-label">Confirmed Today</div>
+  </div>
+</div>
+
+<!-- Bottom grid -->
+<div class="bottom-grid">
+  <!-- Recent Appointments -->
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Recent Appointments</div>
+        <div class="section-subtitle">Latest 10 events from the stream</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Doctor</th>
+            <th>Patient id</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+  {% for row in recent_appointments %}
+<tr>
+  <td style="color:var(--muted); font-size:0.8rem;">{{ row.appointment_time }}</td>
+  <td>{{ row.doctor_name }}</td>
+  <td style="font-family: monospace; color:var(--accent2);">{{ row.patient_id }}</td>
+  <td>
+    {% set et = row.event_type | upper %}
+    <span class="badge
+      {% if et == 'BOOKED'     %}badge-booked
+      {% elif et == 'CONFIRMED'%}badge-confirmed
+      {% elif et == 'CANCELLED'%}badge-cancelled
+      {% else %}badge-completed{% endif %}">
+      {{ row.event_type }}
+    </span>
+  </td>
+</tr>
+  {% endfor %}
+</tbody>
+
+      </table>
+    </div>
+  </div>
+
+  <!-- Specialty breakdown -->
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">By Specialty</div>
+        <div class="section-subtitle">Appointment volume</div>
+      </div>
+    </div>
+    {% set max_cnt = namespace(val=1) %}
+    {% for s in specialty_stats %}
+      {% if s.cnt > max_cnt.val %}{% set max_cnt.val = s.cnt %}{% endif %}
+    {% endfor %}
+    {% for s in specialty_stats %}
+    <div class="specialty-bar">
+      <div class="spec-label">
+        <span>{{ s.specialty }}</span>
+        <span style="color:var(--text); font-weight:600;">{{ s.cnt }}</span>
+      </div>
+      <div class="spec-track">
+        <div class="spec-fill" style="width: {{ (s.cnt / max_cnt.val * 100) | round }}%;"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<p style="color:var(--muted); font-size:0.75rem; margin-top:20px; text-align:right;">
+  ⟳ Auto-refreshes every 10 seconds
+</p>
+{% endblock %}

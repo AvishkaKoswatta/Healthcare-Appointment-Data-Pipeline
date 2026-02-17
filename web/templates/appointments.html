@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Appointments — HealthOS{% endblock %}
+{% block page_title %}Appointments{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Appointment Events</div>
+      <div class="section-subtitle">Showing latest 100 events · streaming live</div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('addModal')">+ Add Appointment</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Event ID</th>
+          <th>Appt ID</th>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Hospital</th>
+          <th>Type</th>
+          <th>Appt Time</th>
+          <th>Fee</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in appointments %}
+        <tr>
+          <td><code style="color:var(--muted); font-size:0.78rem;">{{ a.event_id }}</code></td>
+          <td><code style="color:var(--accent2); font-size:0.8rem;">{{ a.appointment_id }}</code></td>
+          <td>{{ a.patient_id }}</td>
+          <td>{{ a.doctor_id }}</td>
+          <td>{{ a.hospital_id }}</td>
+          <td>
+            {% set et = a.event_type | upper %}
+            <span class="badge
+              {% if et == 'BOOKED'    %}badge-booked
+              {% elif et == 'CONFIRMED' %}badge-confirmed
+              {% elif et == 'CANCELLED' %}badge-cancelled
+              {% else %}badge-completed{% endif %}">
+              {{ a.event_type }}
+            </span>
+          </td>
+          <td style="color:var(--muted); font-size:0.8rem;">{{ a.appointment_time }}</td>
+          <td style="color:var(--accent);">${{ "%.2f"|format(a.consultation_fee) }}</td>
+          <td style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm"
+              onclick="openEdit('{{ a.event_id }}','{{ a.event_type }}','{{ a.appointment_time }}','{{ a.consultation_fee }}')">
+              ✏️ Edit
+            </button>
+            <form method="POST" action="/manage/appointments/delete" onsubmit="return confirm('Delete event {{ a.event_id }}?')">
+              <input type="hidden" name="event_id" value="{{ a.event_id }}">
+              <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-backdrop" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add New Appointment</span>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <form method="POST" action="/manage/appointments/add">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Patient</label>
+          <select name="patient_id" required>
+            <option value="">-- Select Patient --</option>
+            {% for p in patients %}
+              <option value="{{ p.patient_id }}">{{ p.patient_id }} — {{ p.patient_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Doctor</label>
+          <select name="doctor_id" required>
+            <option value="">-- Select Doctor --</option>
+            {% for d in doctors %}
+              <option value="{{ d.doctor_id }}">{{ d.doctor_id }} — {{ d.doctor_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Hospital</label>
+          <select name="hospital_id" required>
+            <option value="">-- Select Hospital --</option>
+            {% for h in hospitals %}
+              <option value="{{ h.hospital_id }}">{{ h.hospital_id }} — {{ h.hospital_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Event Type</label>
+          <select name="event_type" required>
+            <option value="">-- Select Type --</option>
+            <option value="BOOKED">BOOKED</option>
+            <option value="CONFIRMED">CONFIRMED</option>
+            <option value="CANCELLED">CANCELLED</option>
+            <option value="COMPLETED">COMPLETED</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Appointment Time</label>
+          <input type="datetime-local" name="appointment_time" required>
+        </div>
+        <div class="form-group">
+          <label>Consultation Fee ($)</label>
+          <input type="number" name="consultation_fee" step="0.01" min="0" placeholder="150.00" required>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:24px; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Appointment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT MODAL (only editable fields: type, time, fee) -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Edit Appointment Event</span>
+      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <form method="POST" action="/manage/appointments/update">
+      <input type="hidden" name="event_id" id="edit_event_id">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Event ID</label>
+          <input id="edit_event_id_display" disabled style="opacity:0.5;">
+        </div>
+        <div class="form-group">
+          <label>Event Type</label>
+          <select name="event_type" id="edit_event_type" required>
+            <option value="BOOKED">BOOKED</option>
+            <option value="CONFIRMED">CONFIRMED</option>
+            <option value="CANCELLED">CANCELLED</option>
+            <option value="COMPLETED">COMPLETED</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>Appointment Time</label>
+          <input type="datetime-local" name="appointment_time" id="edit_appt_time" required>
+        </div>
+        <div class="form-group">
+          <label>Consultation Fee ($)</label>
+          <input type="number" name="consultation_fee" id="edit_fee" step="0.01" min="0" required>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:24px; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function openEdit(eventId, eventType, apptTime, fee) {
+    document.getElementById('edit_event_id').value = eventId;
+    document.getElementById('edit_event_id_display').value = eventId;
+    document.getElementById('edit_event_type').value = eventType.toUpperCase();
+    // Convert to datetime-local format (strip seconds+tz)
+    let dt = String(apptTime).replace(' ', 'T').substring(0, 16);
+    document.getElementById('edit_appt_time').value = dt;
+    document.getElementById('edit_fee').value = parseFloat(fee).toFixed(2);
+    openModal('editModal');
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,4 @@
+flask
+snowflake-connector-python
+pandas
+plotly

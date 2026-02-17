@@ -12,17 +12,22 @@ INSERT INTO appointment_events (
     consultation_fee
 )
 VALUES (
-    'E000127',
-    'A00127',
-    'P024',
+    'E000134',
+    'A00134',
+;    'P024',
     'D008',
     'H003',
     'CONFIRMED',
     NOW(),
     NOW(),
     320.75
+    
 );
 
+UPDATE patient
+SET city = 'Galle',
+    created_at = NOW()
+WHERE patient_id = 'P004';
 
 docker exec -it kafka bash
 

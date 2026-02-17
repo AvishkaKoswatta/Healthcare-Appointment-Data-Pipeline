@@ -6,6 +6,7 @@ select
     e.appointment_id,          -- unique appointment
     e.appointment_time,        -- when it happens
     e.consultation_fee,        -- payment
+    e.event_type,
 
     -- Patient info
     e.patient_id,

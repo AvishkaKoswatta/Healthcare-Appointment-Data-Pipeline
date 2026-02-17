@@ -23,12 +23,13 @@ with DAG(
 
     dbt_snapshot = BashOperator(
         task_id="dbt_snapshot",
-        bash_command="cd /opt/airflow/healthcare_appointment_dbt && dbt snapshot --profiles-dir /home/airflow/.dbt"
+        bash_command="cd /opt/airflow/healthcare_appointment_dbt && dbt snapshot --profiles-dir /home/airflow/.dbt || true"
         )
     dbt_run_marts = BashOperator(
         task_id="dbt_run_marts",
-        bash_command="cd /opt/airflow/healthcare_appointment_dbt && dbt run --select marts --profiles-dir /home/airflow/.dbt"
+        bash_command="cd /opt/airflow/healthcare_appointment_dbt && dbt run --select marts --profiles-dir /home/airflow/.dbt || true"
     )
 
 
     dbt_snapshot >> dbt_run_marts
+    

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Patients — HealthOS{% endblock %}
+{% block page_title %}Patients{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Patient Registry</div>
+      <div class="section-subtitle">{{ patients | length }} patients on record</div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('addModal')">+ Add Patient</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Gender</th>
+          <th>Date of Birth</th>
+          <th>City</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in patients %}
+        <tr>
+          <td><code style="color:var(--accent2); font-size:0.85rem;">{{ p.patient_id }}</code></td>
+          <td>{{ p.patient_name }}</td>
+          <td>
+            {% if p.gender == 'Male' %}
+              <span class="badge" style="background:#1e3a5f; color:#93c5fd;">♂ Male</span>
+            {% elif p.gender == 'Female' %}
+              <span class="badge" style="background:#2c1f3a; color:#d8b4fe;">♀ Female</span>
+            {% else %}
+              <span class="badge" style="background:var(--surface2); color:var(--muted);">Other</span>
+            {% endif %}
+          </td>
+          <td style="color:var(--muted);">{{ p.date_of_birth }}</td>
+          <td>{{ p.city }}</td>
+          <td style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm"
+              onclick="openEdit('{{ p.patient_id }}','{{ p.patient_name }}','{{ p.gender }}','{{ p.date_of_birth }}','{{ p.city }}')">
+              ✏️ Edit
+            </button>
+            <form method="POST" action="/manage/patients/delete" onsubmit="return confirm('Delete {{ p.patient_id }}?')">
+              <input type="hidden" name="patient_id" value="{{ p.patient_id }}">
+              <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-backdrop" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add New Patient</span>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <form method="POST" action="/manage/patients/add">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Patient ID</label>
+          <input name="patient_id" placeholder="e.g. P101" required>
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input name="patient_name" placeholder="John Doe" required>
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select name="gender" required>
+            <option value="">-- Select --</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" name="date_of_birth" required>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input name="city" placeholder="Los Angeles" required>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:24px; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Patient</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Edit Patient</span>
+      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <form method="POST" action="/manage/patients/update">
+      <input type="hidden" name="patient_id" id="edit_patient_id">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Patient ID</label>
+          <input id="edit_patient_id_display" disabled style="opacity:0.5;">
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input name="patient_name" id="edit_patient_name" required>
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select name="gender" id="edit_gender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" name="date_of_birth" id="edit_dob" required>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input name="city" id="edit_city" required>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:24px; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function openEdit(id, name, gender, dob, city) {
+    document.getElementById('edit_patient_id').value = id;
+    document.getElementById('edit_patient_id_display').value = id;
+    document.getElementById('edit_patient_name').value = name;
+    document.getElementById('edit_gender').value = gender;
+    document.getElementById('edit_dob').value = dob;
+    document.getElementById('edit_city').value = city;
+    openModal('editModal');
+  }
+</script>
+{% endblock %}

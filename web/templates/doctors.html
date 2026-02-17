@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Doctors — HealthOS{% endblock %}
+{% block page_title %}Doctors{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Doctor Registry</div>
+      <div class="section-subtitle">{{ doctors | length }} doctors on record</div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('addModal')">+ Add Doctor</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Hospital</th>
+          <th>Specialty</th>
+          <th>Experience</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in doctors %}
+        <tr>
+          <td><code style="color:var(--accent2); font-size:0.85rem;">{{ d.doctor_id }}</code></td>
+          <td>{{ d.doctor_name }}</td>
+          <td>{{ d.hospital_id }}</td>
+          <td>
+            <span class="badge" style="background:var(--surface2); color:var(--text);">{{ d.specialty }}</span>
+          </td>
+          <td>{{ d.experience_years }} yrs</td>
+          <td style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm"
+              onclick="openEdit('{{ d.doctor_id }}','{{ d.hospital_id }}','{{ d.doctor_name }}','{{ d.specialty }}','{{ d.experience_years }}')">
+              ✏️ Edit
+            </button>
+            <form method="POST" action="/manage/doctors/delete" onsubmit="return confirm('Delete {{ d.doctor_id }}?')">
+              <input type="hidden" name="doctor_id" value="{{ d.doctor_id }}">
+              <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-backdrop" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add New Doctor</span>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <form method="POST" action="/manage/doctors/add">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Doctor ID</label>
+          <input name="doctor_id" placeholder="e.g. D041" required>
+        </div>
+        <div class="form-group">
+          <label>Doctor Name</label>
+          <input name="doctor_name" placeholder="Dr. Jane Smith" required>
+        </div>
+        <div class="form-group">
+          <label>Hospital</label>
+          <select name="hospital_id" required>
+            <option value="">-- Select Hospital --</option>
+            {% for h in hospitals %}
+              <option value="{{ h.hospital_id }}">{{ h.hospital_id }} — {{ h.hospital_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Specialty</label>
+          <select name="specialty" required>
+            <option value="">-- Select Specialty --</option>
+            <option>Cardiology</option>
+            <option>Neurology</option>
+            <option>Oncology</option>
+            <option>Orthopedics</option>
+            <option>Emergency</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Experience (years)</label>
+          <input type="number" name="experience_years" min="0" max="60" placeholder="5" required>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:24px; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Doctor</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Edit Doctor</span>
+      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <form method="POST" action="/manage/doctors/update">
+      <input type="hidden" name="doctor_id" id="edit_doctor_id">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Doctor ID</label>
+          <input id="edit_doctor_id_display" disabled style="opacity:0.5;">
+        </div>
+        <div class="form-group">
+          <label>Doctor Name</label>
+          <input name="doctor_name" id="edit_doctor_name" required>
+        </div>
+        <div class="form-group">
+          <label>Hospital</label>
+          <select name="hospital_id" id="edit_hospital_id" required>
+            {% for h in hospitals %}
+              <option value="{{ h.hospital_id }}">{{ h.hospital_id }} — {{ h.hospital_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Specialty</label>
+          <select name="specialty" id="edit_specialty" required>
+            <option>Cardiology</option>
+            <option>Neurology</option>
+            <option>Oncology</option>
+            <option>Orthopedics</option>
+            <option>Emergency</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Experience (years)</label>
+          <input type="number" name="experience_years" id="edit_exp" min="0" max="60" required>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:24px; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function openEdit(id, hosp, name, spec, exp) {
+    document.getElementById('edit_doctor_id').value = id;
+    document.getElementById('edit_doctor_id_display').value = id;
+    document.getElementById('edit_doctor_name').value = name;
+    document.getElementById('edit_hospital_id').value = hosp;
+    document.getElementById('edit_specialty').value = spec;
+    document.getElementById('edit_exp').value = exp;
+    openModal('editModal');
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Hospitals — HealthOS{% endblock %}
+{% block page_title %}Hospitals{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Hospital Registry</div>
+      <div class="section-subtitle">{{ hospitals | length }} hospitals on record</div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('addModal')">+ Add Hospital</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>City</th>
+          <th>Country</th>
+          <th>Bed Capacity</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in hospitals %}
+        <tr>
+          <td><code style="color:var(--accent2); font-size:0.85rem;">{{ h.hospital_id }}</code></td>
+          <td>{{ h.hospital_name }}</td>
+          <td>{{ h.city }}</td>
+          <td>{{ h.country }}</td>
+          <td>{{ h.bed_capacity }}</td>
+          <td style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm"
+              onclick="openEdit('{{ h.hospital_id }}','{{ h.hospital_name }}','{{ h.city }}','{{ h.country }}','{{ h.bed_capacity }}')">
+              ✏️ Edit
+            </button>
+            <form method="POST" action="/manage/hospitals/delete" onsubmit="return confirm('Delete {{ h.hospital_id }}?')">
+              <input type="hidden" name="hospital_id" value="{{ h.hospital_id }}">
+              <button type="submit" class="btn btn-danger btn-sm">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-backdrop" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add New Hospital</span>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <form method="POST" action="/manage/hospitals/add">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Hospital ID</label>
+          <input name="hospital_id" placeholder="e.g. H007" required>
+        </div>
+        <div class="form-group">
+          <label>Hospital Name</label>
+          <input name="hospital_name" placeholder="City General Hospital" required>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input name="city" placeholder="New York" required>
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          <input name="country" placeholder="USA" required>
+        </div>
+        <div class="form-group">
+          <label>Bed Capacity</label>
+          <input type="number" name="bed_capacity" min="1" placeholder="200" required>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:24px; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Hospital</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Edit Hospital</span>
+      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <form method="POST" action="/manage/hospitals/update">
+      <input type="hidden" name="hospital_id" id="edit_hospital_id">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Hospital ID</label>
+          <input id="edit_hospital_id_display" disabled style="opacity:0.5;">
+        </div>
+        <div class="form-group">
+          <label>Hospital Name</label>
+          <input name="hospital_name" id="edit_hospital_name" required>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input name="city" id="edit_city" required>
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          <input name="country" id="edit_country" required>
+        </div>
+        <div class="form-group">
+          <label>Bed Capacity</label>
+          <input type="number" name="bed_capacity" id="edit_bed_capacity" min="1" required>
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:24px; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function openEdit(id, name, city, country, beds) {
+    document.getElementById('edit_hospital_id').value = id;
+    document.getElementById('edit_hospital_id_display').value = id;
+    document.getElementById('edit_hospital_name').value = name;
+    document.getElementById('edit_city').value = city;
+    document.getElementById('edit_country').value = country;
+    document.getElementById('edit_bed_capacity').value = beds;
+    openModal('editModal');
+  }
+</script>
+{% endblock %}

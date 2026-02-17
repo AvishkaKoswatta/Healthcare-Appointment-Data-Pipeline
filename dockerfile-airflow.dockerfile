@@ -1,11 +1,13 @@
-# Dockerfile-airflow
-FROM apache/airflow:2.9.3
+# Use Airflow 2.9.3 with Python 3.10
+FROM apache/airflow:2.9.3-python3.10
 
 # Switch to airflow user
 USER airflow
 
 # Install dbt packages with pinned versions
-RUN pip install --no-cache-dir dbt-core==1.11.5 dbt-snowflake==1.11.2
+RUN pip install --no-cache-dir \
+    dbt-core==1.11.5 \
+    dbt-snowflake==1.11.2
 
 # Install Amazon provider for Airflow with pinned version
 RUN pip install --no-cache-dir apache-airflow-providers-amazon==7.4.0

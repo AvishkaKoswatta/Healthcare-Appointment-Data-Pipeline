@@ -136,6 +136,21 @@ services:
     ports:
       - "5433:5432"   
 
+  web:
+    build:
+      context: ./web
+      dockerfile: dashboard.dockerfile
+    container_name: healthcare-web
+    restart: always
+    ports:
+      - "8500:5000"
+    env_file:
+      - ./web/.env 
+    depends_on:
+      - airflow-webserver
+    networks:
+      - default
+
 volumes:
   airflow_postgres_data:
   postgres_data:
