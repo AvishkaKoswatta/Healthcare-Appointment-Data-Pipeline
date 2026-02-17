@@ -8,7 +8,7 @@ with ranked as (
         v:hospital_id::string       as hospital_id,
         lower(v:event_type::string) as event_type,
 
-        -- Convert epoch microseconds to timestamp
+         
         to_timestamp(v:appointment_time::number / 1000000)   as appointment_time,
         to_timestamp(v:event_timestamp::number / 1000000)     as event_timestamp,
 

@@ -6,7 +6,7 @@ import snowflake.connector
 from dotenv import load_dotenv
 
 def test_snowflake_connection():
-    # Load .env file
+     
     load_dotenv("/opt/airflow/dags/.env")  
 
     print("Testing Snowflake connection...")
@@ -18,7 +18,7 @@ def test_snowflake_connection():
     database = os.getenv("SNOWFLAKE_DB")
     schema = os.getenv("SNOWFLAKE_SCHEMA")
 
-    # Check missing vars
+     
     missing = [k for k,v in {
         "SNOWFLAKE_USER": user,
         "SNOWFLAKE_PASSWORD": password,
@@ -52,7 +52,7 @@ def test_snowflake_connection():
         print("Connection failed:", e)
         raise
 
-# DAG definition
+ 
 default_args = {"owner": "airflow", "retries": 0}
 
 with DAG(

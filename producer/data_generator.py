@@ -150,9 +150,6 @@ load_dotenv()
 
 fake = Faker()
 
-# -----------------------------
-# PostgreSQL connection
-# -----------------------------
 conn = psycopg2.connect(
     host=os.getenv("POSTGRES_HOST"),
     port=os.getenv("POSTGRES_PORT"),
@@ -162,9 +159,6 @@ conn = psycopg2.connect(
 )
 cur = conn.cursor()
 
-# -----------------------------
-# Low-frequency / static tables
-# -----------------------------
 NUM_HOSPITALS = 6
 NUM_DOCTORS = 40
 NUM_PATIENTS = 100
@@ -173,7 +167,6 @@ hospital_ids = []
 doctor_ids = []
 patient_ids = []
 
-# Generate hospitals
 for i in range(1, NUM_HOSPITALS + 1):
     hospital_id = f"H{i:03}"
     hospital_name = f"{fake.city()} Hospital"
@@ -190,7 +183,6 @@ for i in range(1, NUM_HOSPITALS + 1):
 
     hospital_ids.append(hospital_id)
 
-# Generate doctors
 for i in range(1, NUM_DOCTORS + 1):
     doctor_id = f"D{i:03}"
     hospital_id = random.choice(hospital_ids)
@@ -207,7 +199,7 @@ for i in range(1, NUM_DOCTORS + 1):
 
     doctor_ids.append(doctor_id)
 
-# Generate patients
+
 for i in range(1, NUM_PATIENTS + 1):
     patient_id = f"P{i:03}"
     patient_name = fake.name()
@@ -227,22 +219,18 @@ for i in range(1, NUM_PATIENTS + 1):
 conn.commit()
 print("Static tables populated successfully!")
 
-# -----------------------------
-# High-frequency streaming: appointment_events
-# -----------------------------
 streaming = True
 
-# --- Start event_counter from last event_id in Postgres ---
 cur.execute("SELECT MAX(event_id) FROM appointment_events")
 last_id = cur.fetchone()[0]
 
 if last_id:
-    # Remove 'E' prefix and convert to int
+    
     event_counter = int(last_id[1:]) + 1
 else:
     event_counter = 1
 
-# -----------------------------
+
 def stream_appointments():
     global streaming, event_counter
     while streaming:
@@ -272,17 +260,16 @@ def stream_appointments():
         conn.commit()
         event_counter += 1
 
-        # Adjust sleep for desired streaming speed
+       
         time.sleep(random.uniform(0.5, 2))
 
-# Start streaming in a separate thread
+
 stream_thread = threading.Thread(target=stream_appointments)
 stream_thread.start()
 
 print("Streaming appointments... Press Ctrl+C to stop or call stop_streaming()")
 
-# -----------------------------
-# Function to stop streaming
+
 def stop_streaming():
     global streaming
     streaming = False

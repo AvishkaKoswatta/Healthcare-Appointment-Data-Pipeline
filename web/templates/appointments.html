@@ -174,7 +174,7 @@
     document.getElementById('edit_event_id').value = eventId;
     document.getElementById('edit_event_id_display').value = eventId;
     document.getElementById('edit_event_type').value = eventType.toUpperCase();
-    // Convert to datetime-local format (strip seconds+tz)
+     
     let dt = String(apptTime).replace(' ', 'T').substring(0, 16);
     document.getElementById('edit_appt_time').value = dt;
     document.getElementById('edit_fee').value = parseFloat(fee).toFixed(2);

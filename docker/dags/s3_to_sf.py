@@ -8,16 +8,14 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
-# -----------------------------
-# Load environment variables
-# -----------------------------
+ 
 load_dotenv("/opt/airflow/dags/.env")
 
-# -------- AWS / S3 Config --------
+ 
 AWS_LOCAL_DIR = os.getenv("AWS_LOCAL_DIR", "/tmp/aws_downloads")
 DEFAULT_S3_BUCKET = os.getenv("DEFAULT_S3_BUCKET")
 
-# -------- Snowflake Config --------
+ 
 SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
 SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
 SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
@@ -25,7 +23,7 @@ SNOWFLAKE_WAREHOUSE = os.getenv("SNOWFLAKE_WAREHOUSE")
 SNOWFLAKE_DB = os.getenv("SNOWFLAKE_DB")
 SNOWFLAKE_SCHEMA = os.getenv("SNOWFLAKE_SCHEMA")
 
-# -------- File-to-Table Mapping --------
+ 
 FILENAME_TO_TABLE = {
     "patient.parquet": "patient",
     "doctor.parquet": "doctor",
@@ -33,9 +31,6 @@ FILENAME_TO_TABLE = {
     "appointment_events.parquet": "appointment_events"
 }
 
-# -------------------------
-# Python Callables
-# -------------------------
 def load_new_s3_files(**kwargs):
     """
     Download new files from S3 and load into Snowflake.
@@ -43,7 +38,7 @@ def load_new_s3_files(**kwargs):
     s3 = S3Hook(aws_conn_id="aws_default")
     os.makedirs(AWS_LOCAL_DIR, exist_ok=True)
 
-    # List all Parquet files in raw/
+     
     files = s3.list_keys(bucket_name=DEFAULT_S3_BUCKET, prefix="raw/")
     if not files:
         print("No new files found.")
@@ -68,7 +63,7 @@ def load_new_s3_files(**kwargs):
         filename = os.path.basename(key)
         local_file = os.path.join(AWS_LOCAL_DIR, filename)
 
-        # Download file
+         
         print(f"Downloading {key} from S3")
         s3_client = s3.get_conn()
         s3_client.download_file(
@@ -77,7 +72,7 @@ def load_new_s3_files(**kwargs):
             Filename=local_file
         )
 
-        # Determine Snowflake table
+         
         table_name = None
         for prefix, tbl in FILENAME_TO_TABLE.items():
             if filename.startswith(prefix.replace(".parquet", "")):
@@ -87,7 +82,7 @@ def load_new_s3_files(**kwargs):
             print(f"Skipping {filename}: no matching table")
             continue
 
-        # Upload to Snowflake stage and copy into table
+         
         cur.execute(f"PUT file://{local_file} @%{table_name}")
         print(f"Uploaded {filename} -> @{table_name}")
         cur.execute(f"""
@@ -98,15 +93,12 @@ def load_new_s3_files(**kwargs):
         """)
         print(f"Loaded {filename} into {table_name}")
 
-        # Remove local file
+         
         os.remove(local_file)
 
     cur.close()
     conn.close()
 
-# -------------------------
-# DAG
-# -------------------------
 default_args = {
     "owner": "airflow",
     "retries": 1,
@@ -119,21 +111,20 @@ with DAG(
     description="Automatically load new S3 Parquet files into Snowflake",
     start_date=datetime(2025, 1, 1),
     catchup=False,
-    schedule_interval=None,  # sensor triggers DAG immediately
+    schedule_interval=None,  
 ) as dag:
 
-    # Sensor waits for new parquet files in raw/
+    
     wait_for_new_file = S3KeySensor(
         task_id="wait_for_new_file",
         bucket_name=DEFAULT_S3_BUCKET,
         bucket_key="raw/*.parquet",
         aws_conn_id="aws_default",
-        poke_interval=30,        # check every 30 seconds
-        timeout=60 * 30,         # 30 minute timeout
+        poke_interval=30,        
+        timeout=60 * 30,          
         wildcard_match=True,
     )
 
-    # Load files into Snowflake
     load_task = PythonOperator(
         task_id="load_s3_to_snowflake",
         python_callable=load_new_s3_files,

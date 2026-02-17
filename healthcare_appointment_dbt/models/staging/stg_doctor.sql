@@ -8,7 +8,7 @@ with ranked as (
         v:specialty::string        as specialty,
         v:experience_years::integer as experience_years,
 
-        -- Convert microseconds epoch to timestamp
+         
         to_timestamp(v:created_at::number / 1000000) as created_at,
 
         current_timestamp as load_timestamp,

@@ -6,7 +6,7 @@ with ranked as (
         v:patient_name::string as patient_name,
         v:gender::string as gender,
 
-        -- Convert postgres logical date
+        
         dateadd(
             day,
             v:date_of_birth::number,
@@ -15,7 +15,7 @@ with ranked as (
 
         v:city::string as city,
 
-        -- Convert microseconds epoch
+         
         to_timestamp(v:created_at::number / 1000000) as created_at,
 
         current_timestamp as load_timestamp,

@@ -1,19 +1,11 @@
-# Automatically registers a Debezium PostgreSQL CDC connector in Kafka Connect 
-# using REST API.
-
 import os
 import json
 import requests
 from dotenv import load_dotenv
 
-# -----------------------------
-# Load environment variables
-# -----------------------------
+
 load_dotenv()
 
-# -----------------------------
-# Build connector JSON in memory
-# -----------------------------
 connector_config = {
     "name": "postgres-connector",
     "config": {

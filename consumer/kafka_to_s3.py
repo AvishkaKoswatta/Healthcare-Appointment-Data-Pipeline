@@ -10,9 +10,6 @@ import atexit
 import traceback
 import posixpath
 
-# -----------------------------
-# Load environment variables
-# -----------------------------
 load_dotenv()
 
 print("===== ENVIRONMENT CHECK =====")
@@ -23,19 +20,15 @@ print("AWS_REGION:", os.getenv("AWS_REGION"))
 print("S3_PREFIX:", os.getenv("S3_PREFIX"))
 print("=============================")
 
-# -----------------------------
-# Normalize S3 Prefix
-# -----------------------------
+
 raw_prefix = os.getenv("S3_PREFIX", "").strip()
 
 if raw_prefix:
-    prefix = raw_prefix.strip("/")  # remove leading/trailing slashes
+    prefix = raw_prefix.strip("/") 
 else:
     prefix = ""
 
-# -----------------------------
-# Kafka Consumer
-# -----------------------------
+
 topics = [
     'healthcare_server.public.patient',
     'healthcare_server.public.doctor',
@@ -54,9 +47,7 @@ consumer = KafkaConsumer(
 
 print("Connected to Kafka.")
 
-# -----------------------------
-# AWS S3 Client
-# -----------------------------
+
 s3 = boto3.client(
     's3',
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
@@ -66,9 +57,7 @@ s3 = boto3.client(
 
 bucket = os.getenv("S3_BUCKET")
 
-# -----------------------------
-# Test S3 Connection
-# -----------------------------
+
 print("Testing S3 connection...")
 try:
     s3.put_object(Bucket=bucket, Key="debug_test.txt", Body="hello")
@@ -77,18 +66,14 @@ except Exception:
     print("S3 connection FAILED:")
     traceback.print_exc()
 
-# -----------------------------
-# Batch Configuration
-# -----------------------------
+
 batch_size = 1
 
 buffer = {topic: [] for topic in topics}
 
 print("Streaming CDC events...")
 
-# -----------------------------
-# Upload Function
-# -----------------------------
+
 def upload_to_s3(table_name, records):
     print(f"Uploading {len(records)} records for {table_name}...")
 
@@ -129,9 +114,7 @@ def upload_to_s3(table_name, records):
         print("ERROR during upload:")
         traceback.print_exc()
 
-# -----------------------------
-# Flush Remaining Records on Exit
-# -----------------------------
+
 def flush_all():
     print("Flushing remaining records...")
     for topic, records in buffer.items():
@@ -141,9 +124,7 @@ def flush_all():
 
 atexit.register(flush_all)
 
-# -----------------------------
-# Consume CDC Events
-# -----------------------------
+
 try:
     for message in consumer:
 

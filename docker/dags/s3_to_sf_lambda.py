@@ -142,19 +142,15 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
-# -----------------------------
-# Load environment variables
-# -----------------------------
+
 load_dotenv("/opt/airflow/dags/.env")
 
-# -------- AWS / S3 Config --------
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 AWS_LOCAL_DIR = os.getenv("AWS_LOCAL_DIR", "/tmp/aws_downloads")
-DEFAULT_S3_BUCKET = os.getenv("DEFAULT_S3_BUCKET")  # required for manual trigger
+DEFAULT_S3_BUCKET = os.getenv("DEFAULT_S3_BUCKET")  
 
-# -------- Snowflake Config --------
 SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
 SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
 SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
@@ -162,7 +158,6 @@ SNOWFLAKE_WAREHOUSE = os.getenv("SNOWFLAKE_WAREHOUSE")
 SNOWFLAKE_DB = os.getenv("SNOWFLAKE_DB")
 SNOWFLAKE_SCHEMA = os.getenv("SNOWFLAKE_SCHEMA")
 
-# -------- File-to-Table Mapping --------
 FILENAME_TO_TABLE = {
     "patient.parquet": "patient",
     "doctor.parquet": "doctor",
@@ -170,7 +165,6 @@ FILENAME_TO_TABLE = {
     "appointment_events.parquet": "appointment_events"
 }
 
-# -------- Python Callables --------
 def download_from_s3(**kwargs):
     """
     Download files from S3.
@@ -190,7 +184,7 @@ def download_from_s3(**kwargs):
     files_to_download = []
 
     if dag_run and dag_run.conf:
-        # Lambda-triggered: single file
+       
         s3_bucket = dag_run.conf.get("s3_bucket")
         s3_key = dag_run.conf.get("s3_key")
         if not s3_bucket or not s3_key:
@@ -204,7 +198,7 @@ def download_from_s3(**kwargs):
         files_to_download.append(local_file)
 
     else:
-        # Manual trigger: download all Parquet files
+        
         if not DEFAULT_S3_BUCKET:
             raise ValueError("Manual trigger requires DEFAULT_S3_BUCKET in .env")
         print(f"No DAG run conf found. Scanning bucket {DEFAULT_S3_BUCKET} for Parquet files.")
@@ -261,11 +255,11 @@ def load_to_snowflake(**kwargs):
             print(f"Skipping {filename}: no matching table")
             continue
 
-        # Upload to Snowflake stage
+        
         cur.execute(f"PUT file://{local_file} @%{table_name}")
         print(f"Uploaded {local_file} -> @{table_name} stage")
 
-        # Copy into table
+        
         copy_sql = f"""
             COPY INTO {table_name}
             FROM @%{table_name}
@@ -275,14 +269,12 @@ def load_to_snowflake(**kwargs):
         cur.execute(copy_sql)
         print(f"Data loaded into {table_name}")
 
-        # Optional: remove local file
+        
         os.remove(local_file)
 
     cur.close()
     conn.close()
 
-
-# -------- Airflow DAG --------
 default_args = {
     "owner": "airflow",
     "retries": 1,
