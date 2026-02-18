@@ -9,6 +9,6 @@ Key components
 3. Kafka + Debezium connector 
 4. Amazon S3
 5. Snowflake
-6. Airflow & dbt:
-7. Web dashboard:
+6. Airflow & dbt
+7. Web dashboard
 
