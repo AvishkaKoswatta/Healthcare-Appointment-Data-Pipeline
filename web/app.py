@@ -267,7 +267,8 @@ def add_hospital():
         (hid, data["hospital_name"], data["city"], data["country"], int(data["bed_capacity"])),
     )
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Hospital {hid} added successfully.", "success")
     return redirect(url_for("hospitals"))
 
@@ -287,7 +288,8 @@ def update_hospital():
          int(data["bed_capacity"]), data["hospital_id"]),
     )
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Hospital {data['hospital_id']} updated.", "success")
     return redirect(url_for("hospitals"))
 
@@ -299,7 +301,8 @@ def delete_hospital():
     cur = conn.cursor()
     cur.execute("DELETE FROM hospital WHERE hospital_id=%s", (hid,))
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Hospital {hid} deleted.", "warning")
     return redirect(url_for("hospitals"))
 
@@ -343,7 +346,8 @@ def add_doctor():
          data["specialty"], int(data["experience_years"])),
     )
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Doctor {did} added successfully.", "success")
     return redirect(url_for("doctors"))
 
@@ -363,7 +367,8 @@ def update_doctor():
          data["specialty"], int(data["experience_years"]), data["doctor_id"]),
     )
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Doctor {data['doctor_id']} updated.", "success")
     return redirect(url_for("doctors"))
 
@@ -375,7 +380,8 @@ def delete_doctor():
     cur = conn.cursor()
     cur.execute("DELETE FROM doctor WHERE doctor_id=%s", (did,))
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Doctor {did} deleted.", "warning")
     return redirect(url_for("doctors"))
 
@@ -411,7 +417,8 @@ def add_patient():
         (pid, data["patient_name"], data["gender"], data["date_of_birth"], data["city"]),
     )
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Patient {pid} added successfully.", "success")
     return redirect(url_for("patients"))
 
@@ -431,7 +438,8 @@ def update_patient():
          data["date_of_birth"], data["city"], data["patient_id"]),
     )
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Patient {data['patient_id']} updated.", "success")
     return redirect(url_for("patients"))
 
@@ -443,7 +451,8 @@ def delete_patient():
     cur = conn.cursor()
     cur.execute("DELETE FROM patient WHERE patient_id=%s", (pid,))
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Patient {pid} deleted.", "warning")
     return redirect(url_for("patients"))
 
@@ -506,7 +515,8 @@ def add_appointment():
         ),
     )
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Appointment {appointment_id} (event {event_id}) added.", "success")
     return redirect(url_for("appointments"))
 
@@ -526,7 +536,8 @@ def update_appointment():
          float(data["consultation_fee"]), data["event_id"]),
     )
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Event {data['event_id']} updated.", "success")
     return redirect(url_for("appointments"))
 
@@ -538,7 +549,8 @@ def delete_appointment():
     cur = conn.cursor()
     cur.execute("DELETE FROM appointment_events WHERE event_id=%s", (eid,))
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
     flash(f"Event {eid} deleted.", "warning")
     return redirect(url_for("appointments"))
 
