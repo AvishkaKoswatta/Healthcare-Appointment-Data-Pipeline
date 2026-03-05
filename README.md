@@ -1,5 +1,8 @@
 # Realtime Healthcare Appointment Data Pipeline
 
+![appointment-workflow](https://github.com/user-attachments/assets/74966ac2-ec3e-49af-ac1a-870caadd4e56)
+
+
 Lightweight demo pipeline for streaming appointment events from PostgreSQL -> Kafka (Debezium) -> S3 -> Snowflake with Airflow orchestration and a Flask dashboard. 
 
 Key components  
